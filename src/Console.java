@@ -11,13 +11,15 @@ public class Console {
         FileHandler fileHandler = new FileHandler();
         DirectoryHandler directoryHandler = new DirectoryHandler();
         System.out.println("***File Controler(console edtion)***");
-        Scanner in = new Scanner(System.in);
         while(true){
             System.out.print(">>>");
             ArrayList<String> parameter = new ArrayList<>();
-            parameter.add(in.next());
-            parameter.add(in.next());
-            parameter.add(in.next());
+            Scanner in = new Scanner(System.in);
+            String line = in.nextLine();
+            String[] command = line.split(" ");
+            for(int i = 0; i < command.length; i++){
+                parameter.add(command[i]);
+            }
             if(parameter.get(0).equals("cp")){
                 File source = new File(parameter.get(1));
                 if(source.isDirectory()){
