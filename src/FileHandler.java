@@ -1,5 +1,11 @@
+import javax.crypto.*;
+import javax.crypto.spec.DESKeySpec;
 import java.io.*;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Enumeration;
+import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -82,15 +88,82 @@ public class FileHandler {
         zipfile.close();
     }
 
+    public void encrypt(String sourceFile, String toPath) throws FileNotFoundException, InvalidKeyException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException {
+        try {
+            System.out.print("Please input the key:");
+            Scanner input = new Scanner(System.in);
+            String key = input.next();
+            if(key.length() < 8){
+                System.out.println("Key's length must longer than 8");
 
-    public void encrypt(String sourceFile, String toPath){
-
+            }
+            File file = new File(sourceFile);
+            FileInputStream in = new FileInputStream(sourceFile);
+            FileOutputStream out = new FileOutputStream(toPath + File.separator + file.getName() + ".encrypted");
+            DESKeySpec dks = new DESKeySpec(key.getBytes());
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("DES");
+            SecretKey desKey = skf.generateSecret(dks);
+            Cipher cipher = Cipher.getInstance("DES");
+            cipher.init(Cipher.ENCRYPT_MODE, desKey);
+            CipherInputStream cin = new CipherInputStream(in, cipher);
+            byte[] bytes = new byte[1024];
+            int length;
+            while((length = cin.read(bytes)) >= 0){
+                out.write(bytes, 0, length);
+            }
+            out.flush();
+            out.close();
+            cin.close();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void uncrypt(String sourceFile, String toPath){
+    public void decrypt(String sourceFile, String toPath){
+        try {
+            System.out.print("Please input the key:");
+            Scanner input = new Scanner(System.in);
+            String key = input.next();
+            if(key.length() < 8){
+                System.out.println("Key's length must longer than 8");
 
+            }
+            File file = new File(sourceFile);
+            FileInputStream in = new FileInputStream(sourceFile);
+            FileOutputStream out = new FileOutputStream(toPath + File.separator + "decrypted_" + file.getName().substring(0, file.getName().length() - 10));
+            DESKeySpec dks = new DESKeySpec(key.getBytes());
+            SecretKeyFactory skf = SecretKeyFactory.getInstance("DES");
+            SecretKey desKey = skf.generateSecret(dks);
+            Cipher cipher = Cipher.getInstance("DES");
+            cipher.init(Cipher.DECRYPT_MODE, desKey);
+            CipherOutputStream cout = new CipherOutputStream(out, cipher);
+            byte[] bytes = new byte[1024];
+            int length;
+            while((length = in.read(bytes)) >= 0){
+                cout.write(bytes, 0, length);
+            }
+            cout.flush();
+            cout.close();
+            in.close();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+        }
     }
-    //此处应添加将多个文件压缩的函数
+
     public static void main(String[] args) throws IOException{
         FileHandler fileHandler = new FileHandler();
         //fileHandler.copy("./Java.iml", "./directory/");
